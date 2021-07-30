@@ -26,6 +26,7 @@ const API_TABLE = 'API_CALL';
 const API_FIELD = 'API';
 
 const TRANSACTIONS_TABLE = 'TRANSACTIONS';
+const ID_TRANS_FIELD = 'ID';
 const DATE_FIELD = 'Date';
 const AMOUNT_FIELD = 'Amount';
 const DESCRIPTION_FIELD = 'Description';
@@ -37,6 +38,7 @@ export default function CallAPI() {
 
     const apiTable = base.getTableByName(API_TABLE);
     const infoTable = base.getTableByName(INFO_TABLE);
+    const transactionsTable = base.getTableByName(TRANSACTIONS_TABLE);
 
     const apiField = apiTable.getFieldByName(API_FIELD);
 
@@ -46,6 +48,14 @@ export default function CallAPI() {
     const nameField = infoTable.getFieldByName(NAME_FIELD);
     const emailField = infoTable.getFieldByName(EMAIL_FIELD);
     const infoRecords = useRecords(infoTable, {fields: [emailField], fields: [nameField]});
+
+    const id_transField = transactionsTable.getFieldByName(ID_TRANS_FIELD);
+    const dateField = transactionsTable.getFieldByName(DATE_FIELD);
+    const amountField = transactionsTable.getFieldByName(AMOUNT_FIELD);
+    const descriptionField = transactionsTable.getFieldByName(DESCRIPTION_FIELD);
+
+    const transIDRecords = useRecords(transactionsTable, {fields: [id_transField]});
+
     // const permissionCheck = table.checkPermissionsForUpdateRecord(undefined, {
     //     [NAME_FIELD]: undefined,
     //     [EMAIL_FIELD]: undefined
@@ -93,8 +103,6 @@ async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords) {
 
     await delayAsync(10);
 }
-
-
 
 async function updateRecords(table, recordUpdates) {
     let i = 0;
