@@ -14,6 +14,7 @@ import {
     Icon,
 } from '@airtable/blocks/ui';
 
+import {GetUserInfo} from './info.js';
 
 const access_token_endpoint = 'https://oauth.casso.vn';
 
@@ -23,6 +24,11 @@ const EMAIL_FIELD = 'Email';
 
 const API_TABLE = 'API_CALL';
 const API_FIELD = 'API';
+
+const TRANSACTIONS_TABLE = 'TRANSACTIONS';
+const DATE_FIELD = 'Date';
+const AMOUNT_FIELD = 'Amount';
+const DESCRIPTION_FIELD = 'Description';
 
 const MAX_RECORDS_PER_UPDATE = 50;
 // const isUpdate = false;
@@ -81,54 +87,22 @@ async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords) {
 
     getAccessToken(data_rep.access_token.toString());
 
-    const info = await GetUserInfo(data_rep.access_token.toString(), infoRecords);
+    const info = await GetUserInfo(data_rep.access_token.toString(), infoRecords, access_token_endpoint, NAME_FIELD, EMAIL_FIELD);
     
     await updateRecords(infoTable, info);
 
     await delayAsync(10);
 }
 
-async function GetUserInfo(access_token, infoRecords) {
-    const recordUpdates = [];
-    
-    for (const record of infoRecords) {
-        const request = {
-            method: 'GET',
-            headers: { 'Authorization': access_token },
-        };
-    
-        const response = await fetch(`${access_token_endpoint}/v1/userInfo`, request);
-    
-        const data_rep = await response.json();
-        
 
-        recordUpdates.push(
-            {
-                id: record.id,
-                fields:
-                    {
-                        [EMAIL_FIELD]: data_rep.data.user.email,
-                        [NAME_FIELD]: data_rep.data.business.name,
-                    },
-            }
-        );
-        await delayAsync(10);
-    }
-
-    
-    return recordUpdates;
-}
 
 async function updateRecords(table, recordUpdates) {
     let i = 0;
     while (i < recordUpdates.length) {
         const updateBatch = recordUpdates.slice(i, i + MAX_RECORDS_PER_UPDATE);
-        // await is used to wait for the update to finish saving to Airtable servers before
-        // continuing. This means we'll stay under the rate limit for writes.
         await table.updateRecordsAsync(updateBatch);
         i += MAX_RECORDS_PER_UPDATE;
     }
-    // await table.createRecordsAsync(recordUpdates);
 }
 
 function delayAsync(ms) {

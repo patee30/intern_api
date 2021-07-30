@@ -1,1 +1,0 @@
-const access_token_endpoint = 'https://cors-anywhere.herokuapp.com/https://oauth.casso.vn';
