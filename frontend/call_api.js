@@ -15,6 +15,7 @@ import {
 } from '@airtable/blocks/ui';
 
 import {GetUserInfo} from './info.js';
+import { GetTransaction } from './transactions.js';
 
 const access_token_endpoint = 'https://oauth.casso.vn';
 
@@ -63,16 +64,34 @@ export default function CallAPI() {
 
     return (
         <div>
-            {InputExample(apiKey, infoTable, infoRecords)}
+            {InputExample(apiKey, infoTable, infoRecords, id_transField, transactionsTable, transIDRecords)}
         </div>
     );
 }
-function InputExample(apiKey, infoTable, infoRecords)  {
+function InputExample(apiKey, infoTable, infoRecords, id_transField, transactionsTable, transIDRecords)  {
     const [access_token, getAccessToken] = useState("");
+    var now = new Date();
+    var today = formatDate(now);
+
+    const [fromDate, setFromDate] = useState(today);
+
     return (
         <div>
-            <Button onClick={() => GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords)} icon="search">
-                Get Access-Token
+            <Input
+                value = {fromDate}
+                onChange= {e => setFromDate(e.target.value)}
+                placeholder= "From date? The default value is 7 days if you blank."
+                width = "300px"/>
+
+            <Button onClick={() => 
+                
+                GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords, 
+                id_transField, transactionsTable, transIDRecords)} 
+                
+                icon="search">
+                
+                Get Transactions
+            
             </Button>
             {
 
@@ -82,7 +101,7 @@ function InputExample(apiKey, infoTable, infoRecords)  {
     );
 };
 
-async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords) {
+async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords, id_transField, transactionsTable, transIDRecords) {
     const data_raw = {'code': apiKey};
 
     const request = {
@@ -99,6 +118,8 @@ async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords) {
 
     const info = await GetUserInfo(data_rep.access_token.toString(), infoRecords, access_token_endpoint, NAME_FIELD, EMAIL_FIELD);
     
+    await GetTransaction(access_token_endpoint, data_rep.access_token.toString(), id_transField, transactionsTable, transIDRecords, 
+        ID_TRANS_FIELD, DATE_FIELD, AMOUNT_FIELD, DESCRIPTION_FIELD);
     await updateRecords(infoTable, info);
 
     await delayAsync(10);
@@ -117,3 +138,16 @@ function delayAsync(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+    day = day - 7;
+    return [year, month, day].join('-');
+}

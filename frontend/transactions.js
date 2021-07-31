@@ -1,25 +1,77 @@
-export async function GetTransaction (access_token_endpoint, access_token, transIDRecords, id_transField) {
+const MAX_RECORDS_PER_UPDATE = 50;
+
+export async function GetTransaction(access_token_endpoint, access_token, id_transField, transactionsTable, transIDRecords, 
+    ID_TRANS_FIELD, DATE_FIELD, AMOUNT_FIELD, DESCRIPTION_FIELD) {
     const recordUpdates = []
-    for (record in transIDRecords) {
-        const recordUpdates = [];
-        const request = {
-            method: 'GET',
-            headers: { 'Authorization': access_token},
-        };
+    const request = {
+        method: 'GET',
+        headers: { 'Authorization': access_token},
+    };
 
-        const response = await fetch(`${access_token_endpoint}/v1/transactions`, request);
+    const response = await fetch(`${access_token_endpoint}/v1/transactions?sort=DESC`, request);
 
-        const data_rep = await response.json();
-
-        for (i in data_rep.data.records) {
-            for (j in transIDRecords) {
-                if (i.id != j.getCellValueAsString(id_transField)) {
-                    recordUpdates.push(
-                        id = record.id
-                    )
+    const data_rep = await response.json();
+    
+    if (transIDRecords.length == 0) 
+    {
+        for (const record of data_rep.data.records)
+        {
+            recordUpdates.push(
+                {    
+                    fields: 
+                    {
+                        [ID_TRANS_FIELD]: record.id.toString(),
+                        [DATE_FIELD]: ChangeFormateDate(record.when.toString()),
+                        [AMOUNT_FIELD]: numberWithCommas(record.amount.toString()),
+                        [DESCRIPTION_FIELD]: record.description.toString()
+                    }
                 }
+            )
+        }
+    }
+    else {
+        for (const record of data_rep.data.records) {
+            if (transIDRecords.includes(record.id) == true) {
+                recordUpdates.push(
+                    {    
+                        fields: 
+                        {
+                            [ID_TRANS_FIELD]: record.id.toString(),
+                            [DATE_FIELD]: ChangeFormateDate(record.when.toString()),
+                            [AMOUNT_FIELD]: numberWithCommas(record.amount.toString()),
+                            [DESCRIPTION_FIELD]: record.description.toString()
+                        }
+                    }
+                )
             }
         }
     }
 
+    await createRecords(transactionsTable, recordUpdates);
+    
+    await delayAsync(50);
+}
+
+async function createRecords(table, recordUpdates) {
+    let i = 0;
+    while (i < recordUpdates.length) {
+        const updateBatch = recordUpdates.slice(i, i + MAX_RECORDS_PER_UPDATE);
+        await table.createRecordsAsync(updateBatch);
+        i += MAX_RECORDS_PER_UPDATE;
+    }
+}
+
+function delayAsync(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function ChangeFormateDate(oldDate)
+{
+   return oldDate.toString().split("/").reverse().join("/");
+}
+
+function numberWithCommas(x) {
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
 }
