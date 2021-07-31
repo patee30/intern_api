@@ -7,6 +7,7 @@ import {
     TablePickerSynced,
     ViewPickerSynced,
     FieldPickerSynced,
+    colors,
     FormField,
     Input,
     Button,
@@ -31,7 +32,6 @@ const ID_TRANS_FIELD = 'ID';
 const DATE_FIELD = 'Date';
 const AMOUNT_FIELD = 'Amount';
 const DESCRIPTION_FIELD = 'Description';
-
 const MAX_RECORDS_PER_UPDATE = 50;
 // const isUpdate = false;
 export default function CallAPI() {
@@ -64,44 +64,80 @@ export default function CallAPI() {
 
     return (
         <div>
-            {InputExample(apiKey, infoTable, infoRecords, id_transField, transactionsTable, transIDRecords)}
+            {InputExample(apiKey, infoTable, infoRecords, transactionsTable, transIDRecords)}
         </div>
     );
 }
-function InputExample(apiKey, infoTable, infoRecords, id_transField, transactionsTable, transIDRecords)  {
+function InputExample(apiKey, infoTable, infoRecords, transactionsTable, transIDRecords)  {
     const [access_token, getAccessToken] = useState("");
     var now = new Date();
     var today = formatDate(now);
-
+    
     const [fromDate, setFromDate] = useState(today);
-
+    const [page, setPage] = useState("1");
+    const [pageSize, setPageSize] = useState("10");
     return (
         <div>
-            <Input
-                value = {fromDate}
-                onChange= {e => setFromDate(e.target.value)}
-                placeholder= "From date? The default value is 7 days if you blank."
-                width = "300px"/>
+            <FormField 
+                margin = "20px"
+                label="FromDate">
+                
+                <Input
+                    padding= "5px"
+                    
+                    value = {fromDate}
+                    onChange= {e => setFromDate(e.target.value)}
+                    placeholder= "YYYY-MM-DD"
+                    width = "300px"
+                />
+            </FormField>
 
-            <Button onClick={() => 
-                
-                GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords, 
-                id_transField, transactionsTable, transIDRecords)} 
-                
-                icon="search">
-                
-                Get Transactions
+            <FormField
+                margin = "20px"
+                label="Page">
+
+                <Input
+                    padding= "5px"
+                    
+                    value = {page}
+                    onChange= {e => setPage(e.target.value)}
+                    placeholder= "Page Number"
+                    width = "300px"
+                />
+            </FormField>
+
+            <FormField
+                margin = "20px"
+                label="Page Size">
+
+                <Input
+                    padding= "5px"
+                    marginBottom = "20px"
+                    value = {pageSize}
+                    onChange= {e => setPageSize(e.target.value)}
+                    placeholder= "Page Size"
+                    width = "300px"
+                />
+
+                <Button 
+                    width = "300px"
+                    variant="primary"
+                    onClick={() =>                
+                        GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords, 
+                            transactionsTable, transIDRecords, fromDate, page, pageSize)} icon="search">
+                        
+                        Get Transactions
+                </Button>
+            </FormField>
             
-            </Button>
-            {
-
-                access_token ? (<div>{access_token.toString()}</div>) : (<div>{access_token.toString()}</div>)
-            }
+            
+            
          </div>
     );
 };
 
-async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords, id_transField, transactionsTable, transIDRecords) {
+async function GetAccessToken(apiKey, getAccessToken, infoTable, 
+    infoRecords, transactionsTable, transIDRecords, fromDate, page, pageSize) {
     const data_raw = {'code': apiKey};
 
     const request = {
@@ -118,8 +154,8 @@ async function GetAccessToken(apiKey, getAccessToken, infoTable, infoRecords, id
 
     const info = await GetUserInfo(data_rep.access_token.toString(), infoRecords, access_token_endpoint, NAME_FIELD, EMAIL_FIELD);
     
-    await GetTransaction(access_token_endpoint, data_rep.access_token.toString(), id_transField, transactionsTable, transIDRecords, 
-        ID_TRANS_FIELD, DATE_FIELD, AMOUNT_FIELD, DESCRIPTION_FIELD);
+    await GetTransaction(access_token_endpoint, data_rep.access_token.toString(), transactionsTable, transIDRecords, 
+        ID_TRANS_FIELD, DATE_FIELD, AMOUNT_FIELD, DESCRIPTION_FIELD, fromDate, page, pageSize);
     await updateRecords(infoTable, info);
 
     await delayAsync(10);

@@ -1,14 +1,14 @@
 const MAX_RECORDS_PER_UPDATE = 50;
 
-export async function GetTransaction(access_token_endpoint, access_token, id_transField, transactionsTable, transIDRecords, 
-    ID_TRANS_FIELD, DATE_FIELD, AMOUNT_FIELD, DESCRIPTION_FIELD) {
+export async function GetTransaction(access_token_endpoint, access_token, transactionsTable, transIDRecords, 
+    ID_TRANS_FIELD, DATE_FIELD, AMOUNT_FIELD, DESCRIPTION_FIELD, fromDate, page, pageSize) {
     const recordUpdates = []
     const request = {
         method: 'GET',
         headers: { 'Authorization': access_token},
     };
 
-    const response = await fetch(`${access_token_endpoint}/v1/transactions?sort=DESC`, request);
+    const response = await fetch(`${access_token_endpoint}/v1/transactions?fromDate=${fromDate}&page=${page}&pageSize=${pageSize}&sort=DESC`, request);
 
     const data_rep = await response.json();
     
@@ -31,7 +31,7 @@ export async function GetTransaction(access_token_endpoint, access_token, id_tra
     }
     else {
         for (const record of data_rep.data.records) {
-            if (transIDRecords.includes(record.id) == true) {
+            if (transIDRecords.includes(record.id) == false) {
                 recordUpdates.push(
                     {    
                         fields: 
