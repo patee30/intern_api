@@ -77,7 +77,8 @@ function InputExample(apiKey, infoTable, infoRecords, transactionsTable, transID
     const [page, setPage] = useState("1");
     const [pageSize, setPageSize] = useState("10");
     return (
-        <div>
+        <div
+        justifyContent="center">
             <FormField 
                 margin = "20px"
                 label="FromDate">
