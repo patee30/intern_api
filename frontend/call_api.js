@@ -67,58 +67,43 @@ export default function CallAPI() {
             {InputExample(apiKey, infoTable, infoRecords, transactionsTable, transIDRecords)}
         </div>
     );
+};
+function Test({dataInput, setDataInput}) {   
+    function onChange(event) {
+        setDataInput(event.currentTarget.value);
+    }
+    return (
+        <FormField 
+                margin = "20px"
+                label="FromDate">
+                
+                <Input
+                    padding= "5px"                  
+                    value = {dataInput}
+                    onChange= {onChange}
+                    width = "300px"
+                />
+        </FormField>
+    );
 }
 function InputExample(apiKey, infoTable, infoRecords, transactionsTable, transIDRecords)  {
     const [access_token, getAccessToken] = useState("");
     var now = new Date();
     var today = formatDate(now);
-    
     const [fromDate, setFromDate] = useState(today);
     const [page, setPage] = useState("1");
     const [pageSize, setPageSize] = useState("10");
     return (
-        <div
-        justifyContent="center">
-            <FormField 
-                margin = "20px"
-                label="FromDate">
-                
-                <Input
-                    padding= "5px"
-                    
-                    value = {fromDate}
-                    onChange= {e => setFromDate(e.target.value)}
-                    placeholder= "YYYY-MM-DD"
-                    width = "300px"
-                />
-            </FormField>
-
-            <FormField
-                margin = "20px"
-                label="Page">
-
-                <Input
-                    padding= "5px"
-                    
-                    value = {page}
-                    onChange= {e => setPage(e.target.value)}
-                    placeholder= "Page Number"
-                    width = "300px"
-                />
-            </FormField>
-
-            <FormField
-                margin = "20px"
-                label="Page Size">
-
-                <Input
-                    padding= "5px"
-                    marginBottom = "20px"
-                    value = {pageSize}
-                    onChange= {e => setPageSize(e.target.value)}
-                    placeholder= "Page Size"
-                    width = "300px"
-                />
+        <Box
+        paddingX={3}
+        paddingY={2}
+        marginRight={-2}
+        borderBottom="default"
+        flex=""         
+            >
+            <Test dataInput= {fromDate} setDataInput = {setFromDate}/>
+            <Test dataInput = {page} setDataInput = {setPage} />
+            <Test dataInput = {pageSize} setDataInput = {setPageSize} />
 
                 <Button 
                     width = "300px"
@@ -129,11 +114,8 @@ function InputExample(apiKey, infoTable, infoRecords, transactionsTable, transID
                         
                         Get Transactions
                 </Button>
-            </FormField>
-            
-            
-            
-         </div>
+                       
+         </Box>
     );
 };
 
